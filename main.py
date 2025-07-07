@@ -10,21 +10,28 @@ import random
 from firebase_admin import auth, credentials, initialize_app
 import firebase_admin
 
+# Initialize Firebase Admin SDK only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase-adminsdk.json")  # <- your Firebase Admin SDK path
+    cred = credentials.Certificate("firebase-adminsdk.json")  # Your Firebase Admin SDK path here
     firebase_admin.initialize_app(cred)
 
 app = FastAPI()
 
-# CORS for frontend
+# CORS setup: Add your frontend URLs here
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",           # local dev frontend URL
+        "http://localhost:3001",           # if you use another port for frontend
+        "https://your-frontend-url.vercel.app",  # replace with your live frontend URL
+        # add any other domains as needed
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# SMTP credentials - prefer to set in environment variables for security
 SMTP_EMAIL = os.getenv("SMTP_EMAIL", "rakeshpoojary850@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "zmvvppmowvnnurcp")
 
@@ -48,7 +55,6 @@ def send_otp_email_for_registration(email: str, otp: str):
     except Exception as e:
         return {"success": False, "error": f"Email sending failed (registration): {str(e)}"}
 
-
 def send_otp_email_for_reset(email: str, otp: str):
     message = f"""Subject: Nike Password Reset\n\nUse this OTP to reset your password: {otp}"""
     try:
@@ -60,12 +66,10 @@ def send_otp_email_for_reset(email: str, otp: str):
     except Exception as e:
         return {"success": False, "error": f"Email sending failed (reset): {str(e)}"}
 
-
 @app.get("/")
 def root():
     return {"message": "✅ OTP Server is running!"}
 
-# ✅ REGISTRATION OTP: only if not already registered
 @app.post("/send-otp")
 async def send_registration_otp(data: OTPRequest):
     try:
@@ -78,7 +82,6 @@ async def send_registration_otp(data: OTPRequest):
     except Exception as e:
         return {"success": False, "error": f"Firebase error: {str(e)}"}
 
-# ✅ LOGIN / RESET OTP: always send, don't check Firebase
 @app.post("/send-reset-otp")
 async def send_reset_otp(data: OTPRequest):
     otp = str(random.randint(100000, 999999))
@@ -108,6 +111,6 @@ async def reset_password(data: PasswordResetRequest):
         return {"success": False, "error": f"Password update failed: {str(e)}"}
 
 if __name__ == "__main__":
-    print("🚀 OTP Server is running at http://localhost:8000")
+    print("🚀 OTP Server is running at http://0.0.0.0:8000")
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
