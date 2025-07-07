@@ -1,0 +1,142 @@
+Nike AI User Action Guide
+Version: July 2025
+
+This guide helps users navigate and use the Nike AI web application.
+
+--- 
+1. Homepage (/home)
+After successful login (email/password or Google), users land on the homepage.
+- Navbar contains: Home, Products, About, Contact, Cart, Profile
+- CTA buttons: “Shop Now” or explore products
+
+User Actions:
+- Click “Products” in the navbar to view items
+- Or click “Shop Now” to begin shopping
+
+--- 
+2. Product Page (/product)
+How to get here:
+- Click “Products” from the homepage or navbar
+
+What users can do:
+- View all Nike items (shoes, clothes, accessories)
+- Filter by type or price using dropdowns
+- Sort products by price (low to high or high to low)
+- Use the search bar to find items
+- Click “Add to Cart” to save the product
+- Click “Buy Now” to skip cart and go directly to checkout
+
+--- 
+3. Product Detail Page (/product/[id])
+How to get here:
+- Click a product from the Products page
+
+What users can do:
+- View larger image, title, price, description
+- Click “Add to Cart” → saves item to cart in Firebase
+- Click “Buy Now” → opens /checkout with this item
+
+--- 
+4. Cart Page (/cart)
+How to get here:
+- Click the Cart icon in the navbar
+
+What users can do:
+- Review cart items (name, image, price, quantity)
+- Click “Remove” to delete an item
+- Click “Proceed to Checkout” to continue
+
+--- 
+5. Checkout Page (/checkout)
+How to get here:
+- Click “Proceed to Checkout” on Cart page or “Buy Now” on product page
+
+What users can do:
+- Fill Name, Phone, Address
+- Review order summary
+- Check “Accept Terms & Conditions”
+- Click “Place Order” to save order
+
+--- 
+6. My Orders Page (/my-orders)
+How to get here:
+- Click Profile → My Orders
+
+What users can do:
+- View past orders (items, date, total)
+- Optional: Click to download invoice
+
+--- 
+7. Profile Page (/profile)
+How to get here:
+- Click profile icon in navbar
+
+What users can do:
+- Edit name, phone, address
+- Click “Save” to update info
+
+--- 
+8. Login Page (/login)
+How to get here:
+- Automatically redirected if not logged in, or click “Login” in navbar
+
+What users can do:
+- Enter email/password
+- Or sign in with Google
+- Click “Forgot Password” if needed
+
+--- 
+9. Forgot Password (/forgot-password)
+How to get here:
+- Click “Forgot Password” on login page
+
+What users can do:
+- Enter email and click “Send OTP”
+- Enter received OTP
+- Set and confirm new password
+- Click “Reset Password” → redirects to login
+
+--- 
+10. Register Page (/register)
+How to get here:
+- Click “Create an account” on login page
+
+What users can do:
+- Enter email and password
+- Click “Send OTP” and verify it
+- After OTP verified, user is registered and redirected to homepage
+
+--- 
+11. Smart Chatbot Response Examples
+
+“How do I add something to cart?”
+→ Go to the Product page, click any item, then click “Add to Cart”.
+
+“I forgot my password, what do I do?”
+→ Click “Forgot Password” on the login page, enter your email, verify with OTP, and reset your password.
+
+“Where do I see my past orders?”
+→ Click on the Profile icon, then choose “My Orders”.
+
+“How can I update my address?”
+→ Go to the Profile page and edit the address field. Click “Save”.
+
+--- 
+12. Questions the bot should not answer
+
+If a user asks about unrelated things like “Nike jobs” or external questions, the bot should respond:
+→ “I'm your Nike AI shopping assistant. I'm here to help with product browsing, cart, checkout, and account actions.”
+
+--- 
+13. Internal File Structure (for chatbot memory only)
+
+src/app/
+├── home/page.js
+├── login/page.js
+├── register/page.js
+├── forgot-password/page.js
+├── product/page.js         → Product grid + filter    → Single product page
+├── cart/page.js
+├── checkout/page.js
+├── my-orders/page.js
+├── profile/page.js
