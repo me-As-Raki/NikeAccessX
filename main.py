@@ -26,8 +26,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://nike-access-x-9bsk.vercel.app",
-        "https://nikeaccessx.onrender.com",
+        "http://localhost:3000",  # ✅ For local frontend
+        "https://nikeaccessx.onrender.com",  # ✅ Render
+        "https://nike-access-x-9bsk.vercel.app",  # ✅ Vercel
     ],
     allow_credentials=True,
     allow_methods=["*"],
