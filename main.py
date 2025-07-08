@@ -12,21 +12,24 @@ import firebase_admin
 
 # Initialize Firebase Admin SDK only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase-adminsdk.json")  # Your Firebase Admin SDK path here
+    cred = credentials.Certificate("firebase-adminsdk.json")  # Replace with your actual JSON path
     firebase_admin.initialize_app(cred)
 
 app = FastAPI()
 
-# CORS setup: Add your frontend URLs here
+# ✅ Allow both frontend URLs (Vercel + Render)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://nike-access-x-9bsk.vercel.app"],  # ✅ Allow Vercel frontend
+    allow_origins=[
+        "https://nike-access-x-9bsk.vercel.app",
+        "https://nikeaccessx.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# SMTP credentials - prefer to set in environment variables for security
+# SMTP credentials (should be stored securely in environment variables)
 SMTP_EMAIL = os.getenv("SMTP_EMAIL", "rakeshpoojary850@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "zmvvppmowvnnurcp")
 
@@ -105,6 +108,7 @@ async def reset_password(data: PasswordResetRequest):
     except Exception as e:
         return {"success": False, "error": f"Password update failed: {str(e)}"}
 
+# ✅ Run on local or Render
 if __name__ == "__main__":
     print("🚀 OTP Server is running at http://0.0.0.0:8000")
     import uvicorn
