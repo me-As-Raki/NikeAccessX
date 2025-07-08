@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import smtplib
 import ssl
@@ -10,28 +11,47 @@ import random
 from firebase_admin import auth, credentials, initialize_app
 import firebase_admin
 
-# Initialize Firebase Admin SDK only once
+# ✅ Initialize Firebase Admin SDK only once
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase-adminsdk.json")  # Your Firebase Admin SDK path here
+    cred = credentials.Certificate("firebase-adminsdk.json")  # Make sure this JSON exists in root
     firebase_admin.initialize_app(cred)
 
+# ✅ Create app before any decorator
 app = FastAPI()
 
-# CORS setup: Add your frontend URLs here
+# ✅ CORS setup: Allow Vercel + Render
 app.add_middleware(
     CORSMiddleware,
+<<<<<<< HEAD
     allow_origins=["https://nike-access-x-9bsk.vercel.app"],  # ✅ Allow Vercel frontend
+=======
+    allow_origins=[
+        "https://nike-access-x-9bsk.vercel.app",
+        "https://nikeaccessx.onrender.com",
+    ],
+>>>>>>> 1d86d24647c4c8b4ad553616886b0202c7fd8869
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# SMTP credentials - prefer to set in environment variables for security
+# ✅ Manual OPTIONS handler to fix Render CORS issue
+@app.options("/{rest_of_path:path}")
+async def preflight_handler():
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE",
+        "Access-Control-Allow-Headers": "*",
+    }
+    return JSONResponse(status_code=204, content=None, headers=headers)
+
+# ✅ Email SMTP credentials (use env vars in production)
 SMTP_EMAIL = os.getenv("SMTP_EMAIL", "rakeshpoojary850@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "zmvvppmowvnnurcp")
 
 otp_store = {}
 
+# ✅ Pydantic models
 class OTPRequest(BaseModel):
     email: str
 
@@ -39,6 +59,7 @@ class PasswordResetRequest(BaseModel):
     email: str
     new_password: str
 
+# ✅ OTP Email sender for registration
 def send_otp_email_for_registration(email: str, otp: str):
     message = f"""Subject: Welcome to Nike\n\nUse this OTP to complete your registration: {otp}"""
     try:
@@ -50,6 +71,7 @@ def send_otp_email_for_registration(email: str, otp: str):
     except Exception as e:
         return {"success": False, "error": f"Email sending failed (registration): {str(e)}"}
 
+# ✅ OTP Email sender for password reset
 def send_otp_email_for_reset(email: str, otp: str):
     message = f"""Subject: Nike Password Reset\n\nUse this OTP to reset your password: {otp}"""
     try:
@@ -61,10 +83,12 @@ def send_otp_email_for_reset(email: str, otp: str):
     except Exception as e:
         return {"success": False, "error": f"Email sending failed (reset): {str(e)}"}
 
+# ✅ Home route
 @app.get("/")
 def root():
     return {"message": "✅ OTP Server is running!"}
 
+# ✅ Send OTP (registration)
 @app.post("/send-otp")
 async def send_registration_otp(data: OTPRequest):
     try:
@@ -77,23 +101,25 @@ async def send_registration_otp(data: OTPRequest):
     except Exception as e:
         return {"success": False, "error": f"Firebase error: {str(e)}"}
 
+# ✅ Send OTP (reset)
 @app.post("/send-reset-otp")
 async def send_reset_otp(data: OTPRequest):
     otp = str(random.randint(100000, 999999))
     otp_store[data.email] = otp
     return send_otp_email_for_reset(data.email, otp)
 
+# ✅ Verify OTP
 @app.post("/verify-otp")
 async def verify_otp(request: Request):
     body = await request.json()
     email = body.get("email")
     otp_input = body.get("otp")
-
     if email in otp_store and otp_store[email] == otp_input:
         del otp_store[email]
         return {"verified": True}
     return {"verified": False}
 
+# ✅ Reset password
 @app.post("/reset-password")
 async def reset_password(data: PasswordResetRequest):
     try:
@@ -105,7 +131,8 @@ async def reset_password(data: PasswordResetRequest):
     except Exception as e:
         return {"success": False, "error": f"Password update failed: {str(e)}"}
 
+# ✅ Local dev server
 if __name__ == "__main__":
-    print("🚀 OTP Server is running at http://0.0.0.0:8000")
     import uvicorn
+    print("🚀 OTP Server is running at http://0.0.0.0:8000")
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
