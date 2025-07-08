@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -19,7 +21,7 @@ export default function ForgotPasswordPage() {
   const sendOtp = async () => {
     setStatus('Sending OTP...');
     try {
-      const res = await fetch('http://localhost:8000/send-reset-otp', {
+      const res = await fetch(`${BASE_URL}/send-reset-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -42,7 +44,7 @@ export default function ForgotPasswordPage() {
   const verifyOtp = async () => {
     setStatus('Verifying OTP...');
     try {
-      const res = await fetch('http://localhost:8000/verify-otp', {
+      const res = await fetch(`${BASE_URL}/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),
@@ -50,7 +52,7 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
       if (data.verified) {
         setVerified(true);
-        setStatus(' OTP verified. You may now reset your password.');
+        setStatus('✅ OTP verified. You may now reset your password.');
         console.log(`[OTP VERIFIED] for ${email}`);
       } else {
         setStatus('❌ Invalid OTP. Please try again.');
@@ -69,7 +71,7 @@ export default function ForgotPasswordPage() {
 
     setStatus('Updating password...');
     try {
-      const res = await fetch('http://localhost:8000/reset-password', {
+      const res = await fetch(`${BASE_URL}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, new_password: newPassword }),
