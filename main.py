@@ -20,10 +20,7 @@ app = FastAPI()
 # ✅ Allow both frontend URLs (Vercel + Render)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://nike-access-x-9bsk.vercel.app",
-        "https://nikeaccessx.onrender.com",
-    ],
+    allow_origins=["*"],   # 👈 Allows requests from ANY frontend (Render, Vercel, localhost, etc.)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
