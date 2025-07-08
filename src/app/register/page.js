@@ -9,9 +9,19 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { auth } from '@/firebase/config';
-
 import { Eye, EyeOff, Mail, Lock, KeyRound } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
+
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+console.log("🌐 Backend Server URL:", BASE_URL);
+if (!BASE_URL) {
+  console.error("❌ BACKEND URL is undefined! Check your .env or Vercel env settings.");
+} else if (BASE_URL.includes('localhost')) {
+  console.warn("🧪 Using LOCALHOST Backend");
+} else {
+  console.log("🚀 Using DEPLOYED Backend");
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,20 +34,15 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    'https://otp-backend-1-3aee.onrender.com';
-
   useEffect(() => {
-    fetch(`${backendUrl}/`)
-      .then((res) => res.json())
-      .then((data) => console.log('📡 OTP Server:', data.message))
-      .catch((err) => console.error('❌ OTP server down:', err));
-  }, [backendUrl]);
+    fetch(`${BASE_URL}/`)
+      .then(res => res.json())
+      .then(data => console.log('📡 OTP Server Health:', data.message))
+      .catch(err => console.error('❌ OTP server not reachable:', err));
+  }, []);
 
   const sendOtp = async () => {
     setErrorMsg('');
-
     if (!email || !email.includes('@')) {
       setErrorMsg('❌ Enter a valid email address');
       return;
@@ -50,32 +55,31 @@ export default function RegisterPage() {
         return;
       }
     } catch (err) {
-      setErrorMsg('❌ Error checking email status');
+      setErrorMsg('❌ Error checking email');
       return;
     }
 
     try {
-      const res = await fetch(`${backendUrl}/send-otp`, {
+      console.log('📤 Sending OTP to:', email);
+      console.log('🔗 POST →', `${BASE_URL}/send-otp`);
+
+      const res = await fetch(`${BASE_URL}/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP error ${res.status}`);
-      }
-
       const data = await res.json();
-
       if (data.success) {
         setOtpSent(true);
-        setErrorMsg('');
-        console.log('✅ OTP sent');
+        console.log('✅ OTP sent successfully');
       } else {
-        setErrorMsg(data.error || '❌ Failed to send OTP');
+        console.error('❌ OTP sending failed:', data.error || data);
+        setErrorMsg(data.error || '❌ OTP sending failed');
       }
     } catch (err) {
-      setErrorMsg('❌ OTP server error: ' + err.message);
+      console.error('❌ OTP server error:', err);
+      setErrorMsg('❌ OTP server error');
     }
   };
 
@@ -93,35 +97,35 @@ export default function RegisterPage() {
       return;
     }
 
-    // Verify OTP with backend
     try {
-      const verifyRes = await fetch(`${backendUrl}/verify-otp`, {
+      console.log('🔐 Verifying OTP for:', email);
+      console.log('🔗 POST →', `${BASE_URL}/verify-otp`);
+
+      const verify = await fetch(`${BASE_URL}/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),
       });
 
-      if (!verifyRes.ok) {
-        throw new Error(`HTTP error ${verifyRes.status}`);
-      }
+      const result = await verify.json();
+      console.log('🛡️ OTP verification response:', result);
 
-      const verifyData = await verifyRes.json();
-
-      if (!verifyData.verified) {
+      if (!result.verified) {
         setErrorMsg('❌ Incorrect OTP');
         return;
       }
     } catch (err) {
-      setErrorMsg('❌ OTP verification failed: ' + err.message);
+      console.error('❌ OTP verification error:', err);
+      setErrorMsg('❌ OTP verification failed');
       return;
     }
 
-    // Create Firebase user
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push('/home');
     } catch (err) {
-      setErrorMsg('❌ Registration failed: ' + err.message);
+      console.error('❌ Firebase signup error:', err);
+      setErrorMsg('❌ ' + err.message);
     }
   };
 
@@ -131,6 +135,7 @@ export default function RegisterPage() {
       await signInWithPopup(auth, provider);
       router.push('/home');
     } catch (err) {
+      console.error('❌ Google Sign-in failed:', err);
       setErrorMsg('❌ Google sign-in failed');
     }
   };
@@ -145,11 +150,8 @@ export default function RegisterPage() {
           Create your Nike account and unlock next-gen gear powered by innovation.
         </p>
 
-        {errorMsg && (
-          <div className="mb-4 text-sm text-center text-red-500">{errorMsg}</div>
-        )}
+        {errorMsg && <div className="mb-4 text-sm text-center text-red-500">{errorMsg}</div>}
 
-        {/* Google Sign-In */}
         <button
           onClick={handleGoogleSignIn}
           className="w-full flex items-center justify-center gap-3 py-3 mb-6 bg-white text-black rounded-md font-semibold shadow hover:bg-gray-100 transition"
@@ -164,13 +166,9 @@ export default function RegisterPage() {
           <div className="flex-grow h-px bg-gray-600" />
         </div>
 
-        {/* Form */}
         <form onSubmit={handleRegister} className="space-y-5">
-          {/* Email */}
           <div>
-            <label className="text-sm flex items-center gap-1">
-              <Mail size={16} /> Email
-            </label>
+            <label className="text-sm flex items-center gap-1"><Mail size={16} /> Email</label>
             <div className="flex gap-2 mt-1">
               <input
                 type="email"
@@ -184,20 +182,15 @@ export default function RegisterPage() {
                 type="button"
                 onClick={sendOtp}
                 className="px-3 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold"
-                disabled={otpSent}
-                title={otpSent ? 'OTP already sent' : 'Send OTP'}
               >
                 Send OTP
               </button>
             </div>
           </div>
 
-          {/* OTP */}
           {otpSent && (
             <div>
-              <label className="text-sm flex items-center gap-1">
-                <KeyRound size={16} /> Enter OTP
-              </label>
+              <label className="text-sm flex items-center gap-1"><KeyRound size={16} /> Enter OTP</label>
               <input
                 type="text"
                 required
@@ -209,11 +202,8 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* Password */}
           <div>
-            <label className="text-sm flex items-center gap-1">
-              <Lock size={16} /> Password
-            </label>
+            <label className="text-sm flex items-center gap-1"><Lock size={16} /> Password</label>
             <div className="relative mt-1">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -227,18 +217,14 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label className="text-sm flex items-center gap-1">
-              <Lock size={16} /> Confirm Password
-            </label>
+            <label className="text-sm flex items-center gap-1"><Lock size={16} /> Confirm Password</label>
             <div className="relative mt-1">
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -252,14 +238,12 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
               >
                 {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             className="w-full py-3 rounded-md bg-blue-600 hover:bg-blue-700 font-semibold transition"
