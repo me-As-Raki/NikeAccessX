@@ -20,12 +20,7 @@ app = FastAPI()
 # CORS setup: Add your frontend URLs here
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",           # local dev frontend URL
-        "http://localhost:3001",           # if you use another port for frontend
-        "https://your-frontend-url.vercel.app",  # replace with your live frontend URL
-        # add any other domains as needed
-    ],
+    allow_origins=["https://nike-access-x-9bsk.vercel.app"],  # ✅ Allow Vercel frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
