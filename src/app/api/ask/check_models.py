@@ -1,6 +1,7 @@
 import requests
 
-API_KEY = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=AIzaSyAmAixF69dmV8C_JrbCQFxCtstzBX5dfbE'  # <-- Replace with your Gemini API key
+# ✅ Only the API key here, NOT the full URL
+API_KEY = 'AIzaSyAmAixF69dmV8C_JrbCQFxCtstzBX5dfbE'
 
 url = f'https://generativelanguage.googleapis.com/v1/models?key={API_KEY}'
 

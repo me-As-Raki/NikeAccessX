@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { auth, db } from '@/firebase/config';
 import { collection, getDocs, query, where, addDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, XCircle, Filter, RotateCcw, ArrowLeft } from 'lucide-react';
+import {
+  ShoppingCart,
+  XCircle,
+  Filter,
+  RotateCcw,
+  ArrowLeft,
+} from 'lucide-react';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -19,7 +25,6 @@ export default function Products() {
   const router = useRouter();
 
   useEffect(() => setMounted(true), []);
-
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -28,12 +33,12 @@ export default function Products() {
     setLoading(true);
     try {
       const snapshot = await getDocs(collection(db, 'products'));
-      const items = snapshot.docs.map(doc => {
+      const items = snapshot.docs.map((doc) => {
         const item = doc.data();
         const type = item.type?.trim() || 'Shoes';
         return { id: doc.id, ...item, type };
       });
-      const types = ['All', ...new Set(items.map(p => p.type))];
+      const types = ['All', ...new Set(items.map((p) => p.type))];
       setProducts(items);
       setProductTypes(types);
     } catch (err) {
@@ -51,13 +56,14 @@ export default function Products() {
   const handleAddToCart = async (product) => {
     const user = auth.currentUser;
     if (!user) return showToast('Please login to add to cart');
-
     try {
       const uid = user.uid;
       const cartRef = collection(db, 'cartProducts', uid, 'items');
-      const snapshot = await getDocs(query(cartRef, where('productId', '==', product.id)));
-
-      if (!snapshot.empty) return showToast(`"${product.name}" already in cart`);
+      const snapshot = await getDocs(
+        query(cartRef, where('productId', '==', product.id))
+      );
+      if (!snapshot.empty)
+        return showToast(`"${product.name}" already in cart`);
 
       await addDoc(cartRef, {
         productId: product.id,
@@ -93,13 +99,17 @@ export default function Products() {
   };
 
   const filteredProducts = products
-    .filter(p =>
-      (filterType === 'All' || p.type === filterType) &&
-      p.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter(
+      (p) =>
+        (filterType === 'All' || p.type === filterType) &&
+        p.name?.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) =>
-      sortOrder === 'low-high' ? a.price - b.price :
-      sortOrder === 'high-low' ? b.price - a.price : 0
+      sortOrder === 'low-high'
+        ? a.price - b.price
+        : sortOrder === 'high-low'
+        ? b.price - a.price
+        : 0
     );
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
@@ -115,7 +125,6 @@ export default function Products() {
       )}
 
       <div className="max-w-7xl mx-auto">
-
         {/* Back Button */}
         <div className="mb-6">
           <button
@@ -126,15 +135,23 @@ export default function Products() {
           </button>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-10">Explore Our Smart Lineup</h1>
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-10">
+          Explore Our Smart Lineup
+        </h1>
 
-        {/* Filter Controls */}
+        {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-center gap-4 mb-10">
-          <div className="flex items-center bg-gray-800 rounded-lg px-3 py-2">
+          <div className="flex items-center bg-gray-800 rounded-lg px-3 py-2 w-full sm:w-auto">
             <Filter className="w-4 h-4 text-gray-400 mr-2" />
-            <select value={filterType} onChange={e => setFilterType(e.target.value)} className="bg-transparent text-white outline-none">
-              {productTypes.map(t => (
-                <option key={t} value={t} className="text-black">{t}</option>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="bg-transparent text-white outline-none w-full sm:w-auto"
+            >
+              {productTypes.map((t) => (
+                <option key={t} value={t} className="text-black">
+                  {t}
+                </option>
               ))}
             </select>
           </div>
@@ -143,55 +160,81 @@ export default function Products() {
             type="text"
             placeholder="Search products..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg w-full sm:w-64 text-white"
           />
 
-          <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white">
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white w-full sm:w-auto"
+          >
             <option value="">Sort by Price</option>
             <option value="low-high">Low → High</option>
             <option value="high-low">High → Low</option>
           </select>
 
-          <button onClick={refreshRandom} className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+          <button
+            onClick={refreshRandom}
+            className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 w-full sm:w-auto"
+          >
             <RotateCcw className="w-4 h-4" /> Refresh
           </button>
 
           {(filterType !== 'All' || sortOrder || searchQuery) && (
-            <button onClick={clearFilters} className="flex items-center gap-2 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-600">
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-2 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-600 w-full sm:w-auto"
+            >
               <XCircle className="w-4 h-4" />
               Clear
             </button>
           )}
         </div>
 
-        {/* Product Grid */}
+        {/* Product Cards */}
         {loading ? (
           <p className="text-center text-gray-400">Loading products...</p>
         ) : visibleProducts.length ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {visibleProducts.map(product => (
-                <div key={product.id} className="bg-white/5 border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition duration-300 shadow-xl backdrop-blur-md">
-                  <div onClick={() => router.push(`/product/${product.id}`)} className="cursor-pointer">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+              {visibleProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white/5 border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition duration-300 shadow-xl backdrop-blur-md"
+                >
+                  <div
+                    onClick={() => router.push(`/product/${product.id}`)}
+                    className="cursor-pointer"
+                  >
                     <img
                       src={product.image}
                       alt={product.name}
-                      onError={(e) => e.target.src = '/fallback.jpg'}
+                      onError={(e) => (e.target.src = '/fallback.jpg')}
                       className="w-full h-52 object-cover border-b border-gray-700"
                     />
                   </div>
                   <div className="p-5 space-y-2">
                     <h2 className="text-lg font-bold">{product.name}</h2>
-                    <span className="text-xs inline-block bg-gray-700 rounded-full px-2 py-1 text-gray-300">{product.type}</span>
-                    <p className="text-sm text-gray-300 line-clamp-2">{product.description}</p>
+                    <span className="text-xs inline-block bg-gray-700 rounded-full px-2 py-1 text-gray-300">
+                      {product.type}
+                    </span>
+                    <p className="text-sm text-gray-300 line-clamp-2">
+                      {product.description}
+                    </p>
                     <div className="flex items-center justify-between pt-3">
                       <span className="font-semibold">₹{product.price}</span>
                       <div className="flex gap-2">
-                        <button onClick={() => handleAddToCart(product)} className="bg-white text-black rounded-full px-3 py-1 text-sm hover:bg-gray-200 flex items-center gap-1">
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className="bg-white text-black rounded-full px-3 py-1 text-sm hover:bg-gray-200 flex items-center gap-1"
+                        >
                           <ShoppingCart className="w-4 h-4" /> Add
                         </button>
-                        <button onClick={() => handleBuyNow(product)} className="bg-blue-600 rounded-full px-3 py-1 text-sm hover:bg-blue-700 text-white">
+                        <button
+                          onClick={() => handleBuyNow(product)}
+                          className="bg-blue-600 rounded-full px-3 py-1 text-sm hover:bg-blue-700 text-white"
+                        >
                           ⚡ Buy
                         </button>
                       </div>
@@ -205,7 +248,7 @@ export default function Products() {
             {visibleCount < filteredProducts.length && (
               <div className="flex justify-center mt-10">
                 <button
-                  onClick={() => setVisibleCount(prev => prev + 8)}
+                  onClick={() => setVisibleCount((prev) => prev + 8)}
                   className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg shadow"
                 >
                   Load More
@@ -214,7 +257,9 @@ export default function Products() {
             )}
           </>
         ) : (
-          <p className="text-center text-gray-400 mt-20">No products match your filter.</p>
+          <p className="text-center text-gray-400 mt-20">
+            No products match your filter.
+          </p>
         )}
       </div>
     </section>

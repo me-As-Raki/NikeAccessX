@@ -2,13 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import {
-  Bot,
-  Send,
-  XCircle,
-  Volume2,
-  VolumeX,
-  Mic,
-  MicOff,
+  Bot, Send, XCircle, Volume2, VolumeX, Mic, MicOff,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,7 +18,6 @@ export default function Chatbot() {
   const synthRef = useRef(null);
   const recognitionRef = useRef(null);
 
-  // Scroll to bottom and init synth
   useEffect(() => {
     synthRef.current = window.speechSynthesis;
     if (chat.length > 0 && chat[chat.length - 1].sender === 'bot') {
@@ -33,7 +26,6 @@ export default function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat]);
 
-  // First open → send welcome message
   useEffect(() => {
     if (open && chat.length === 0) {
       setChat([
@@ -48,25 +40,40 @@ export default function Chatbot() {
 
   const handleAsk = async () => {
     if (!input.trim()) return;
+
     const userMessage = { sender: 'user', text: input };
     setChat(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
-    const res = await fetch('/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userQuestion: input }),
-    });
+    try {
+      console.log('🟡 Sending user question to Gemini route:', input);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BACKEND}/api/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userQuestion: input }), // ✅ FIXED prompt → input
+      });
 
-    const data = await res.json();
-    const botMessage = {
-      sender: 'bot',
-      text: data.reply || 'Sorry, I couldn’t respond.',
-    };
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
 
-    setChat(prev => [...prev, botMessage]);
-    setLoading(false);
+      const data = await response.json();
+      console.log('🟢 Gemini replied:', data.reply);
+
+      setChat(prev => [...prev, { sender: 'bot', text: data.reply }]);
+    } catch (err) {
+      console.error('❌ Chatbot error:', err.message);
+      setChat(prev => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: '⚠️ Gemini failed to generate a response. Please try again later.',
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVoiceToggle = () => {
@@ -140,7 +147,6 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Floating Bot Button */}
       {!open && (
         <motion.button
           onClick={() => setOpen(true)}
@@ -156,7 +162,6 @@ export default function Chatbot() {
         </motion.button>
       )}
 
-      {/* Chat Panel */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -166,7 +171,6 @@ export default function Chatbot() {
             transition={{ duration: 0.3 }}
             className="fixed bottom-24 left-6 w-[360px] max-h-[70vh] flex flex-col bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700 z-50 overflow-hidden"
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-black dark:bg-gray-800 text-white">
               <div className="flex items-center gap-2 animate-pulse">
                 <Bot size={20} className="text-green-400" />
@@ -185,7 +189,6 @@ export default function Chatbot() {
               </div>
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50 dark:bg-gray-900 text-sm scroll-smooth">
               {chat.map((msg, i) => (
                 <div
@@ -200,7 +203,6 @@ export default function Chatbot() {
                 </div>
               ))}
 
-              {/* Typing animation when loading */}
               {loading && (
                 <div className="mr-auto bg-gray-300 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-xl max-w-[80%] flex gap-1 animate-pulse">
                   <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></span>
@@ -211,7 +213,6 @@ export default function Chatbot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <div className="flex items-center border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2">
               <input
                 type="text"

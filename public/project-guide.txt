@@ -130,6 +130,24 @@ If a user asks about unrelated things like “Nike jobs” or external questions
 --- 
 13. Internal File Structure (for chatbot memory only)
 
+Nike AI Product Guide
+
+Categories:
+1. Running Shoes
+   - Nike Revolution 6 (₹3800)
+   - Nike Air Zoom Pegasus (₹4999)
+   - Nike Air Max DN (₹4500)
+
+2. Casual Sneakers
+   - Nike Court Legacy
+   - Nike Blazer Low '77
+
+How to Buy:
+- Visit the Products page.
+- Use filters to browse by price or type.
+- Add items to cart or click "Buy Now".
+
+
 src/app/
 ├── home/page.js
 ├── login/page.js

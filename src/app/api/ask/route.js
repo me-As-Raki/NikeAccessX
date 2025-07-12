@@ -1,79 +1,109 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
+import { readFile } from 'fs/promises';
 import path from 'path';
 
-const MODEL_NAME = 'gemini-1.5-flash'; // ✅ Using latest stable Gemini model
-const API_KEY = 'AIzaSyAmAixF69dmV8C_JrbCQFxCtstzBX5dfbE'; // 🔒 Replace with your real key
+const MODEL_NAME = 'gemini-1.5-flash';
+const API_KEY = process.env.GEMINI_API_KEY;
 
 export async function POST(req) {
   try {
+    console.log('✅ /api/ask POST route hit. Connecting to Gemini API...');
+
     const { userQuestion } = await req.json();
+    console.log('💬 User Question:', userQuestion);
 
-    // 1. Load the guide text
-    const guidePath = path.join(process.cwd(), 'project-guide.txt');
-    let guideText = fs.readFileSync(guidePath, 'utf-8');
-    if (guideText.length > 3000) {
-      console.warn('⚠️ Guide too long, trimming...');
-      guideText = guideText.slice(0, 3000);
-    }
+    const guidePath = path.join(process.cwd(), 'public', 'project-guide.txt');
+    let guideText = await readFile(guidePath, 'utf-8');
 
-    // 2. Secure prompt to restrict to website assistance only
+    if (guideText.length > 3000) guideText = guideText.slice(0, 3000);
+
     const prompt = `
-You are a helpful virtual shopping assistant for the Nike AI website. 
-Use only the information from this user guide to assist users:\n\n${guideText}\n\n
+You are a friendly and helpful AI assistant for the Nike AI website. 
+You're here to guide users with anything related to shopping, products, accounts, orders, or using the website.
 
-⚠️ IMPORTANT:
-- ONLY answer questions related to the Nike AI web experience: shopping, browsing products, cart, checkout, orders, and user account features.
-- DO NOT answer or reveal anything about internal code, Firebase, APIs, React, or technical setup.
-- If asked anything outside your scope, politely respond:
-"I'm here to assist with Nike shopping and website-related queries only."
+📌 IMPORTANT INSTRUCTIONS:
+- Only use the information provided in the guide below.
+- If the user's question is unrelated (like personal or general topics), respond politely:
+  "I'm here to help with the Nike AI website. Try asking about products, orders, or your account!"
+- If the user's question contains spelling mistakes or typos, try to understand and correct it, as long as it's related to the guide.
 
-Now respond professionally and helpfully to this user question:\n\nUser: ${userQuestion}
+Nike AI Website Guide:
+======================
+${guideText}
+======================
+
+✅ Sample Conversations:
+
+User: Where do I find running shoes?
+AI: You can browse running shoes in the Products section under the 'Running' filter.
+
+User: How can I view my past orders?
+AI: Go to the 'My Orders' page after logging in to see all your previous purchases.
+
+User: Can I sign in with Google?
+AI: Yes, you can log in using your email and password or your Google account on the /login page.
+
+❌ Off-topic Example:
+
+User: What's your name?
+AI: I'm your Nike AI Assistant — here to help you with anything on the Nike AI website!
+
+User: What is 2 + 2?
+AI: I'm here to help with the Nike AI website. Try asking about products, orders, or your account!
+
+Now help with this:
+User: ${userQuestion}
+AI:
 `;
 
-    console.log(`📏 Prompt length: ${prompt.length} characters`);
 
-    // 3. Gemini API call body
-    const body = {
-      contents: [
-        {
-          parts: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ],
-    };
 
-    // 4. Send request to Gemini API
-    const response = await fetch(
+    // ✅ Calling Gemini
+    console.log('📡 Sending prompt to Gemini...');
+    const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:generateContent?key=${API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
       }
     );
 
-    const data = await response.json();
-    console.log('🧠 Gemini Response:', JSON.stringify(data, null, 2));
+    const data = await geminiRes.json();
+    console.log('📦 Gemini API raw response:', JSON.stringify(data, null, 2));
 
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const reply =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+      "⚠️ Gemini did not return a valid reply.";
 
-    if (reply) {
-      console.log('✅ Gemini API responded successfully.');
-      return NextResponse.json({ reply });
-    } else {
-      console.warn('⚠️ Gemini returned no usable reply.');
-      return NextResponse.json({ reply: 'Sorry, no reply from Gemini.' });
-    }
+    const response = NextResponse.json({ reply });
 
-  } catch (error) {
-    console.error('❌ Gemini request failed:', error);
+    // ✅ Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+
+    console.log('✅ Gemini response sent to frontend.\n');
+    return response;
+  } catch (err) {
+    console.error('❌ Gemini route error:', err);
     return NextResponse.json(
-      { reply: 'Server error. Please Check your internet connection' },
+      { reply: '⚠️ Server error while processing your request.' },
       { status: 500 }
     );
   }
+}
+
+export function OPTIONS() {
+  const response = new NextResponse(null, { status: 204 });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  return response;
 }

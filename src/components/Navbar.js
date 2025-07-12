@@ -69,7 +69,7 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex gap-6 items-center text-sm font-medium">
-            <Link href="/" className="flex items-center gap-2 hover:text-gray-300"><Home className="w-4 h-4" /> Home</Link>
+            <Link href="/home" className="flex items-center gap-2 hover:text-gray-300"><Home className="w-4 h-4" /> Home</Link>
             <Link href="/products" className="flex items-center gap-2 hover:text-gray-300"><ShoppingCart className="w-4 h-4" /> Products</Link>
             <Link href="/about" className="flex items-center gap-2 hover:text-gray-300"><Info className="w-4 h-4" /> About</Link>
             <Link href="/contact" className="flex items-center gap-2 hover:text-gray-300"><Mail className="w-4 h-4" /> Contact</Link>
@@ -93,7 +93,7 @@ export default function Navbar() {
         {/* Mobile Dropdown */}
         {menuOpen && (
           <div className="md:hidden bg-black border-t border-gray-700 px-4 pb-4 flex flex-col gap-4 text-sm font-medium">
-            {[{ href: '/', icon: Home, label: 'Home' },
+            {[{ href: '/home', icon: Home, label: 'Home' },
               { href: '/products', icon: ShoppingCart, label: 'Products' },
               { href: '/about', icon: Info, label: 'About' },
               { href: '/contact', icon: Mail, label: 'Contact' },

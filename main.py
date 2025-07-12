@@ -22,20 +22,21 @@ if not firebase_admin._apps and firebase_config_b64:
 # ✅ FastAPI app
 app = FastAPI()
 
-# ✅ CORS setup for Vercel + Render
+# ✅ CORS setup for local + frontend deployment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # ✅ For local frontend
-        "https://nikeaccessx.onrender.com",  # ✅ Render
-        "https://nike-access-x-9bsk.vercel.app",  # ✅ Vercel
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://nikeaccessx.onrender.com",
+        "https://nike-access-x-9bsk.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Fix preflight CORS issue (Render only bug)
+# ✅ Fix preflight CORS issue (Render specific bug)
 @app.options("/{rest_of_path:path}")
 async def preflight_handler():
     headers = {
@@ -132,8 +133,12 @@ async def reset_password(data: PasswordResetRequest):
     except Exception as e:
         return {"success": False, "error": f"Password update failed: {str(e)}"}
 
-# ✅ Run locally or Render
+# ✅ Chatbot route (include after all endpoints)
+from chatbot import router as chatbot_router
+app.include_router(chatbot_router)
+
+# ✅ Run locally
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 OTP Server is running at http://0.0.0.0:8000")
+    print("🚀 Server running at http://0.0.0.0:8000")
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
