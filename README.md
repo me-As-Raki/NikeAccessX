@@ -2,9 +2,24 @@
 
 This is a complete fullstack **Nike ecommerce web app** built using **Next.js 14 App Router**, **Tailwind CSS**, **Firebase (Auth, Firestore, Storage)**, and an intelligent **OTP +AI-Chatbot system**.
 
-> 🚀 Live Demo: Coming soon  
-> 📦 Backend OTP Server: Python FastAPI  
-> 🧠 AI Chatbot: Gemini (Google AI) or GPT integration  
+## 🚀 Live Demo
+
+🎯 **Experience the power of AI-driven shopping — sleek, smart, and stunning.**
+
+<p align="center">
+  <a href="https://nikeaccessx.onrender.com" target="_blank">
+    <img src="https://img.shields.io/badge/🟢%20Click%20Here%20to%20Try%20Live%20Demo-000000?style=for-the-badge&logo=nike&logoColor=white" alt="Live Demo Badge" />
+  </a>
+</p>
+
+---
+
+## ⚙️ Backend & AI Integration
+
+| Feature                     | Technology Used         | Description                                                |
+|-----------------------------|--------------------------|------------------------------------------------------------|
+| 📦 **Backend OTP Server**  | **Python FastAPI**       | Handles secure OTP-based user authentication              |
+| 🧠 **AI Chatbot**          | **Gemini (Google AI)**   | Smart AI assistant that helps users browse and get support |
 
 ---
 
@@ -22,7 +37,7 @@ This is a complete fullstack **Nike ecommerce web app** built using **Next.js 14
 - ✅ Filtering by type (Shoes, Clothing, Accessories)
 - ✅ Sorting by price
 - ✅ Search bar
-- ✅ Product detail view (`/product/[id]`)
+- ✅ Product detail view
 - ✅ Admin page to bulk upload products
 
 ### 🛒 Cart + Checkout
