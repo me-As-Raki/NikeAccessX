@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { auth, db } from '@/firebase/config';
-import { collection, getDocs, query, where, addDoc } from 'firebase/firestore';
+import {
+  collection, getDocs, query, where, addDoc,
+} from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import {
-  ShoppingCart,
-  XCircle,
-  Filter,
-  RotateCcw,
-  ArrowLeft,
+  ShoppingCart, XCircle, Filter, RotateCcw, ArrowLeft,
 } from 'lucide-react';
 
 export default function Products() {
@@ -25,9 +23,7 @@ export default function Products() {
   const router = useRouter();
 
   useEffect(() => setMounted(true), []);
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -56,14 +52,12 @@ export default function Products() {
   const handleAddToCart = async (product) => {
     const user = auth.currentUser;
     if (!user) return showToast('Please login to add to cart');
+
     try {
       const uid = user.uid;
       const cartRef = collection(db, 'cartProducts', uid, 'items');
-      const snapshot = await getDocs(
-        query(cartRef, where('productId', '==', product.id))
-      );
-      if (!snapshot.empty)
-        return showToast(`"${product.name}" already in cart`);
+      const snapshot = await getDocs(query(cartRef, where('productId', '==', product.id)));
+      if (!snapshot.empty) return showToast(`"${product.name}" already in cart`);
 
       await addDoc(cartRef, {
         productId: product.id,
@@ -82,7 +76,7 @@ export default function Products() {
   };
 
   const handleBuyNow = (product) => {
-    router.push(`/product/${product.id}`);
+    router.push(`/products/${product.id}`);
   };
 
   const clearFilters = () => {
@@ -113,7 +107,6 @@ export default function Products() {
     );
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
-
   if (!mounted) return null;
 
   return (
@@ -139,52 +132,57 @@ export default function Products() {
           Explore Our Smart Lineup
         </h1>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-center gap-4 mb-10">
-          <div className="flex items-center bg-gray-800 rounded-lg px-3 py-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-gray-400 mr-2" />
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="bg-transparent text-white outline-none w-full sm:w-auto"
+        {/* Filter Controls */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-between gap-3 mb-10">
+          {/* Search */}
+          <div className="relative col-span-1 sm:w-64">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-400"
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              {productTypes.map((t) => (
-                <option key={t} value={t} className="text-black">
-                  {t}
-                </option>
-              ))}
-            </select>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
 
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg w-full sm:w-64 text-white"
-          />
+          {/* Filter by Type */}
+          <div className="col-span-1">
+            <div className="flex items-center bg-gray-800 rounded-lg px-3 py-2 w-full">
+              <Filter className="w-4 h-4 text-gray-400 mr-2" />
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="bg-transparent text-white text-sm outline-none w-full"
+              >
+                {productTypes.map((t) => (
+                  <option key={t} value={t} className="text-black">{t}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white w-full sm:w-auto"
-          >
-            <option value="">Sort by Price</option>
-            <option value="low-high">Low → High</option>
-            <option value="high-low">High → Low</option>
-          </select>
-
+          {/* Random Refresh */}
           <button
             onClick={refreshRandom}
-            className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 w-full sm:w-auto"
+            className="col-span-1 flex items-center justify-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm"
           >
             <RotateCcw className="w-4 h-4" /> Refresh
           </button>
 
+          {/* Clear Filters */}
           {(filterType !== 'All' || sortOrder || searchQuery) && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-2 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-600 w-full sm:w-auto"
+              className="col-span-1 flex items-center justify-center gap-2 border border-red-500 px-4 py-2 rounded-lg hover:bg-red-600 text-sm text-white"
             >
               <XCircle className="w-4 h-4" />
               Clear
@@ -192,59 +190,56 @@ export default function Products() {
           )}
         </div>
 
-        {/* Product Cards */}
+        {/* Product Grid */}
         {loading ? (
           <p className="text-center text-gray-400">Loading products...</p>
         ) : visibleProducts.length ? (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {visibleProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white/5 border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition duration-300 shadow-xl backdrop-blur-md"
+                  className="flex flex-col justify-between bg-white/5 border border-gray-700 rounded-xl overflow-hidden hover:scale-105 transition duration-300 shadow-xl backdrop-blur-md"
                 >
                   <div
-                    onClick={() => router.push(`/product/${product.id}`)}
-                    className="cursor-pointer"
+                    onClick={() => router.push(`/products/${product.id}`)}
+                    className="cursor-pointer w-full aspect-square"
                   >
                     <img
                       src={product.image}
                       alt={product.name}
                       onError={(e) => (e.target.src = '/fallback.jpg')}
-                      className="w-full h-52 object-cover border-b border-gray-700"
+                      className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="p-5 space-y-2">
-                    <h2 className="text-lg font-bold">{product.name}</h2>
-                    <span className="text-xs inline-block bg-gray-700 rounded-full px-2 py-1 text-gray-300">
+
+                  <div className="flex flex-col p-4 text-white h-full">
+                    <h2 className="text-sm sm:text-base font-bold mb-1 line-clamp-1">{product.name}</h2>
+                    <span className="text-xs bg-gray-700 rounded-full px-2 py-1 text-gray-300 mb-2 w-fit">
                       {product.type}
                     </span>
-                    <p className="text-sm text-gray-300 line-clamp-2">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center justify-between pt-3">
-                      <span className="font-semibold">₹{product.price}</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAddToCart(product)}
-                          className="bg-white text-black rounded-full px-3 py-1 text-sm hover:bg-gray-200 flex items-center gap-1"
-                        >
-                          <ShoppingCart className="w-4 h-4" /> Add
-                        </button>
-                        <button
-                          onClick={() => handleBuyNow(product)}
-                          className="bg-blue-600 rounded-full px-3 py-1 text-sm hover:bg-blue-700 text-white"
-                        >
-                          ⚡ Buy
-                        </button>
-                      </div>
+                    <p className="text-sm font-semibold mb-3">₹{product.price}</p>
+
+                    <div className="mt-auto flex flex-col gap-2 sm:flex-row">
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        className="bg-white text-black rounded-full px-3 py-1 text-xs sm:text-sm hover:bg-gray-200 flex items-center justify-center gap-1"
+                      >
+                        <ShoppingCart className="w-4 h-4" /> Add to Cart
+                      </button>
+                      <button
+                        onClick={() => handleBuyNow(product)}
+                        className="bg-blue-600 rounded-full px-3 py-1 text-xs sm:text-sm hover:bg-blue-700 text-white"
+                      >
+                        ⚡ Buy Now
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Load More */}
+            {/* Load More Button */}
             {visibleCount < filteredProducts.length && (
               <div className="flex justify-center mt-10">
                 <button
@@ -257,9 +252,7 @@ export default function Products() {
             )}
           </>
         ) : (
-          <p className="text-center text-gray-400 mt-20">
-            No products match your filter.
-          </p>
+          <p className="text-center text-gray-400 mt-20">No products match your filter.</p>
         )}
       </div>
     </section>

@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { db, auth } from '@/firebase/config';
 import {
-  collection, getDocs, addDoc, deleteDoc, doc
+  collection, getDocs, getDoc, addDoc, deleteDoc, doc
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   CheckCircle, ArrowLeft, ShoppingCart, MapPin, Phone, User, CreditCard
@@ -21,18 +21,24 @@ export default function CheckoutPage() {
   const [success, setSuccess] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const itemId = searchParams.get('item'); // ?item=productId (for Buy Now)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
-        await fetchCart(user.uid);
+        if (itemId) {
+          await fetchSingleProduct(itemId);
+        } else {
+          await fetchCart(user.uid);
+        }
       } else {
         router.push('/login');
       }
     });
     return () => unsub();
-  }, []);
+  }, [itemId]);
 
   const fetchCart = async (uid) => {
     setLoading(true);
@@ -44,6 +50,26 @@ export default function CheckoutPage() {
       setSubtotal(total);
     } catch (err) {
       console.error('Error loading cart:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSingleProduct = async (id) => {
+    setLoading(true);
+    try {
+      const docRef = doc(db, 'products', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCartItems([{ ...data, id, quantity: 1 }]);
+        setSubtotal(data.price);
+      } else {
+        alert('Product not found');
+        router.push('/products');
+      }
+    } catch (err) {
+      console.error('Buy Now error:', err);
     } finally {
       setLoading(false);
     }
@@ -61,10 +87,12 @@ export default function CheckoutPage() {
         placedAt: new Date(),
       });
 
-      // Delete cart items from Firestore
-      await Promise.all(cartItems.map(item =>
-        deleteDoc(doc(db, `cartProducts/${userId}/items`, item.id))
-      ));
+      if (!itemId) {
+        // Clear full cart only for full-cart orders
+        await Promise.all(cartItems.map(item =>
+          deleteDoc(doc(db, `cartProducts/${userId}/items`, item.id))
+        ));
+      }
 
       setSuccess(true);
       setCartItems([]);

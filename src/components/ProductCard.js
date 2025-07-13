@@ -13,10 +13,10 @@ export default function ProductCard({
     : 'https://via.placeholder.com/400x300?text=No+Image';
 
   return (
-    <div className="flex flex-col sm:flex-row bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 w-full max-w-4xl mx-auto overflow-hidden border border-gray-200 dark:border-gray-700">
-
-      {/* Image Section */}
-      <div className="w-full sm:w-1/3 h-44 sm:h-auto">
+    <div className="w-full bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-lg transition duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row text-sm">
+      
+      {/* Image */}
+      <div className="w-full sm:w-1/3 aspect-square sm:aspect-auto sm:h-40">
         <img
           src={safeImageUrl}
           alt={name}
@@ -28,32 +28,32 @@ export default function ProductCard({
         />
       </div>
 
-      {/* Details Section */}
-      <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between gap-3">
+      {/* Details */}
+      <div className="w-full sm:w-2/3 p-3 sm:p-4 flex flex-col justify-between gap-2">
+        {/* Title & Desc */}
         <div>
-          <h3 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white line-clamp-1">
+          <h3 className="text-[15px] sm:text-base font-semibold text-gray-900 dark:text-white truncate">
             {name}
           </h3>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+          <p className="text-[12px] sm:text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
             {description}
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6 mt-2">
-          <p className="text-base sm:text-lg font-bold text-black dark:text-white">
-            ₹{price}
-          </p>
+        {/* Price & Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+          <p className="font-bold text-gray-900 dark:text-white">₹{price}</p>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={onAddToCart}
-              className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm rounded-full bg-black text-white hover:bg-gray-800 transition"
+              className="px-3 py-1 text-xs sm:text-sm rounded-full bg-black text-white hover:bg-gray-800 transition"
             >
               Add to Cart
             </button>
             <button
               onClick={onBuyNow}
-              className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm rounded-full border border-black dark:border-white text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              className="px-3 py-1 text-xs sm:text-sm rounded-full border border-black dark:border-white text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
               Buy Now
             </button>

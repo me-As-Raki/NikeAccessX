@@ -79,43 +79,58 @@ export default function HomePage() {
           {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-800" />}
         </button>
 
-        {/* Featured Products */}
-        <section className="py-16 px-4 sm:px-6 bg-gray-50 dark:bg-gray-800">
-          <h2 className="text-2xl sm:text-4xl font-bold text-center mb-10">
-            <span className="inline-flex items-center gap-2">
-              <Lightbulb className="w-6 h-6 text-yellow-500" />
-              Featured Innovation
-            </span>
-          </h2>
+       {/* 🌟 Featured Products Section (Professional Themed) */}
+<section className="py-16 px-4 sm:px-6 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+  <h2 className="text-3xl sm:text-5xl font-extrabold text-center mb-14 tracking-tight text-gray-900 dark:text-white">
+    <span className="inline-flex items-center gap-2">
+      <Lightbulb className="w-7 h-7 text-indigo-500 dark:text-indigo-400 animate-pulse" />
+      Trending Now
+    </span>
+  </h2>
 
-          {loading ? (
-            <p className="text-center text-gray-500 dark:text-gray-400">Loading products...</p>
-          ) : products.length === 0 ? (
-            <p className="text-center text-red-500">No products found!</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
-              {products.map(product => (
-                <div
-                  key={product.id}
-                  onClick={handleProductClick}
-                  className="cursor-pointer bg-white dark:bg-gray-900 rounded-xl shadow hover:shadow-xl transition-all duration-300"
-                >
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    onError={(e) => (e.currentTarget.src = '/fallback.jpg')}
-                    className="w-full h-56 object-cover rounded-t-xl"
-                  />
-                  <div className="p-5 space-y-2">
-                    <h3 className="text-lg sm:text-xl font-semibold">{product.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{product.description}</p>
-                    <p className="text-lg font-bold">₹{product.price}</p>
-                  </div>
-                </div>
-              ))}
+  {loading ? (
+    <p className="text-center text-gray-500 dark:text-gray-400">Loading products...</p>
+  ) : products.length === 0 ? (
+    <p className="text-center text-red-500">No products found!</p>
+  ) : (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      {products.map((product) => (
+        <div
+          key={product.id}
+          onClick={handleProductClick}
+          className="group relative bg-white/20 dark:bg-white/5 border border-gray-400 dark:border-gray-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-lg hover:scale-105"
+        >
+          {/* Image section */}
+          <div className="relative overflow-hidden">
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              onError={(e) => (e.currentTarget.src = '/fallback.jpg')}
+              className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent group-hover:opacity-100 transition-opacity duration-300 z-10" />
+            {/* Price badge */}
+            <div className="absolute bottom-3 left-3 bg-gradient-to-r from-indigo-600 via-blue-500 to-slate-600 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full shadow-lg z-20">
+              ₹{product.price.toLocaleString()}
             </div>
-          )}
-        </section>
+          </div>
+
+          {/* Product Name */}
+          <div className="p-4 text-center">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
+              {product.name}
+            </h3>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+
+
+
+
 
         {/* Banner Section */}
         <section className="py-20 px-4 sm:px-6 bg-black text-white text-center">
