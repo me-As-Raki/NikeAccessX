@@ -3,6 +3,7 @@ import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import Link from 'next/link';
 import AddToCartBuyNowButtons from './AddToCartBuyNowButtons';
 
+// ✅ Static paths generation for export mode
 export async function generateStaticParams() {
   const snapshot = await getDocs(collection(db, 'products'));
   return snapshot.docs.map((doc) => ({ id: doc.id }));
@@ -10,6 +11,7 @@ export async function generateStaticParams() {
 
 export default async function ProductPage({ params }) {
   const { id } = params;
+
   const docRef = doc(db, 'products', id);
   const docSnap = await getDoc(docRef);
 
@@ -21,7 +23,18 @@ export default async function ProductPage({ params }) {
     );
   }
 
-  const product = docSnap.data();
+  const data = docSnap.data();
+
+  // ✅ Sanitize product data (timestamp → safe format)
+  const product = {
+    id,
+    name: data.name || 'Unnamed Product',
+    description: data.description || '',
+    price: data.price || 0,
+    image: data.image || '',
+    type: data.type || 'General',
+    timestamp: data.timestamp?.seconds || null, // optional
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white px-4 sm:px-6 py-16">
@@ -48,14 +61,15 @@ export default async function ProductPage({ params }) {
 
           <div className="flex flex-col gap-2">
             <span className="inline-block w-fit bg-gray-800 px-4 py-1 rounded-full text-xs text-gray-300 uppercase tracking-wide">
-              {product.type || 'Product'}
+              {product.type}
             </span>
             <p className="text-3xl font-bold text-green-400">₹{product.price}</p>
           </div>
 
           <div className="mt-2">
             <h2 className="text-lg font-semibold text-gray-200 mb-2">Quick Actions</h2>
-            <AddToCartBuyNowButtons product={{ id, ...product }} />
+            {/* ✅ Pass sanitized object */}
+            <AddToCartBuyNowButtons product={product} />
           </div>
 
           <div className="mt-6">
